@@ -121,7 +121,4 @@ Audit logs are recorded in `audit_logs` for **EXPORT_REQUEST**, **EXPORT_COMPLET
 - Set env vars for RDS endpoint and AWS credentials
 - Run services behind one gateway (8080) + security group rules
 
-CI trigger test
-
-
 > This repo intentionally includes Eureka + Config + async export + audit logs so you can describe a realistic enhancement in interviews.
