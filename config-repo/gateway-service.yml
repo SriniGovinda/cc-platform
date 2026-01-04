@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+        - id: account
+          uri: lb://account-service
+          predicates:
+            - Path=/api/account/**
+        - id: transactions
+          uri: lb://transaction-service
+          predicates:
+            - Path=/api/transactions/**,/api/exports/**,/api/statements/**
+        - id: saga
+          uri: lb://saga-service
+          predicates:
+            - Path=/api/saga/**
+
+security:
+  jwt:
+    secret: change-me-change-me-change-me-change-me-change-me-1234567890
+    issuer: cc-platform
+
+eureka:
+  instance:
+    prefer-ip-address: true

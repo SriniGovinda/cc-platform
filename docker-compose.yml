@@ -1,0 +1,38 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: cc-postgres
+    environment:
+      POSTGRES_DB: ccdb
+      POSTGRES_USER: ccuser
+      POSTGRES_PASSWORD: ccpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: cc-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  localstack:
+    image: localstack/localstack:3
+    container_name: cc-localstack
+    environment:
+      SERVICES: s3
+      DEFAULT_REGION: ap-northeast-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - "4566:4566"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./scripts/localstack-init:/etc/localstack/init/ready.d"
+
+volumes:
+  pgdata:
