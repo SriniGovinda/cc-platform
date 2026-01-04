@@ -18,6 +18,9 @@ public class TransactionController {
     public TransactionController(TransactionService service) {
         this.service = service;
     }
+    /**
+     * Fetches all transactions for the authenticated user.
+     */
 
     @GetMapping
     public ResponseEntity<List<Transaction>> list(
