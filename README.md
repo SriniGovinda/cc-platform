@@ -19,6 +19,12 @@ Client → **gateway-service (8080)** → routes to:
 - transaction-service (8083)
 - saga-service (8084)
 
+## Architecture Principles
+- API Gateway as single entry point
+- Centralized JWT security
+- Database per service
+- Orchestration-based Saga for rollback
+
 ## Run locally (Docker required)
 ```bash
 docker compose up -d
