@@ -12,6 +12,7 @@ Monorepo Spring Boot microservices project you can push to GitHub and deploy on 
 - **Async CSV Export Job** (batch pagination) + **Audit logs for every export request/download**
 - **Saga service** (Orchestration-based Saga) → **distributed rollback via compensation**
 
+
 ## Architecture (High level)
 Client → **gateway-service (8080)** → routes to:
 - auth-service (8081)
@@ -119,5 +120,8 @@ Audit logs are recorded in `audit_logs` for **EXPORT_REQUEST**, **EXPORT_COMPLET
 - Copy jars to EC2 (or build Docker images)
 - Set env vars for RDS endpoint and AWS credentials
 - Run services behind one gateway (8080) + security group rules
+
+CI trigger test
+
 
 > This repo intentionally includes Eureka + Config + async export + audit logs so you can describe a realistic enhancement in interviews.
