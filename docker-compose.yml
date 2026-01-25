@@ -1,4 +1,10 @@
+version: "3.9"
+
 services:
+
+  # =========================
+  # Infrastructure
+  # =========================
 
   postgres:
     image: postgres:15
@@ -31,8 +37,128 @@ services:
     ports:
       - "4566:4566"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-      - "./scripts/localstack-init:/etc/localstack/init/ready.d"
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./scripts/localstack-init:/etc/localstack/init/ready.d
+    restart: unless-stopped
+
+  # =========================
+  # Platform Services
+  # =========================
+
+  config-server:
+    image: config-server:1.0
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    restart: unless-stopped
+
+  eureka-server:
+    image: eureka-server:1.0
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    restart: unless-stopped
+
+  gateway-service:
+    image: gateway-service:1.0
+    container_name: gateway-service
+    depends_on:
+      - eureka-server
+      - config-server
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    restart: unless-stopped
+
+  # =========================
+  # Business Services
+  # =========================
+
+  auth-service:
+    image: auth-service:1.0
+    container_name: auth-service
+    depends_on:
+      - postgres
+      - redis
+      - config-server
+      - eureka-server
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ccdb
+      SPRING_DATASOURCE_USERNAME: ccuser
+      SPRING_DATASOURCE_PASSWORD: ccpass
+
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    restart: unless-stopped
+
+  account-service:
+    image: account-service:1.0
+    container_name: account-service
+    depends_on:
+      - postgres
+      - redis
+      - config-server
+      - eureka-server
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ccdb
+      SPRING_DATASOURCE_USERNAME: ccuser
+      SPRING_DATASOURCE_PASSWORD: ccpass
+
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    restart: unless-stopped
+
+  transaction-service:
+    image: transaction-service:1.0
+    container_name: transaction-service
+    depends_on:
+      - postgres
+      - redis
+      - localstack
+      - config-server
+      - eureka-server
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ccdb
+      SPRING_DATASOURCE_USERNAME: ccuser
+      SPRING_DATASOURCE_PASSWORD: ccpass
+
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_REGION: ap-northeast-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    restart: unless-stopped
+
+# =========================
+# Volumes
+# =========================
 
 volumes:
   pgdata:
